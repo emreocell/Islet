@@ -18,7 +18,7 @@ A Dynamic-Island-style pill at the top of your screen for **music**, **Claude Co
 <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
 <img alt="Windows 10 / 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?style=flat-square&logo=windows11&logoColor=white">
 <img alt="Electron 45" src="https://img.shields.io/badge/Electron-45-47848f?style=flat-square&logo=electron&logoColor=white">
-<img alt="295 tests passing" src="https://img.shields.io/badge/tests-295%20passing-34c759?style=flat-square">
+<img alt="295 tests passing" src="https://img.shields.io/badge/tests-412%20passing-34c759?style=flat-square">
 
 <br><br>
 
@@ -70,8 +70,10 @@ The open notch, left to right: **agent sessions** → **music** → **time and b
 
 | | |
 |---|---|
+| 🎨 **2.5: control and style** | Theme Studio (6 themes, 3 pill shapes, motion presets, shareable `islet-theme:` codes), per-app volume, a screen-recording timer with OBS controls, notification actions (Open, Snooze, Dismiss, Reply), Focus Mode 2.0, a tabbed Dev panel (git, ports, snippets) and Clipboard Actions. The AI coding panel shows how full each Claude session's context window is. |
+| ⚡ **2.4: live activities** | GitHub Actions runs, PR checks and deploys in the pill (needs a signed-in `gh` CLI), Bluetooth connect pop-ups with battery level, smart shelf actions (resize, convert, compress, ZIP) and a much lighter idle notch. |
 | 🐾 **2.3: bring your own pet** | Load any pet in the Codex Pets format. The pet talks in the closed pill, codes along with your agent, asks when it needs you and plants a flower after focus sessions. |
-| 📱 **2.2: dock and Phone drop** | A dock with Phone drop, Links, World clock, Clipboard, Notes, Timer, Shelf, Weather, Units, System and AI coding. Scan a QR code to move files between phone and PC over Wi-Fi. |
+| 📱 **2.2: dock and Phone drop** | A dock with Phone drop, Links, World clock, Clipboard, Notes, Timer, Shelf, System and AI coding. Scan a QR code to move files between phone and PC over Wi-Fi. |
 | 🔎 **Search** | `Alt+Space` finds apps, files, folders, Wi-Fi and Bluetooth switches, settings, clipboard items and notes. |
 | 🍅 **Focus tools** | Pomodoro and stopwatch from the tray. Do Not Disturb turns on by itself during focus. |
 | 🔊 **Volume, brightness and mic HUD** | Level bars and clean icons in the notch; a muted mic gets its own red toast. |
@@ -171,9 +173,9 @@ The dock row opens a tall view with every tool, each in its own panel:
 | 🔗 **Links** | Your saved links, one click away |
 | 🕒 **World clock** | Times in other cities |
 | 📋 **Clipboard** · 📝 **Notes** · 🗂️ **Shelf** | History with pins, quick notes, drag files in and out |
-| ⏱️ **Timer** | Timer, Pomodoro, stopwatch |
-| 🌤️ **Weather** | Next 6 hours and 5 days, humidity and wind |
-| 📐 **Units** · 📊 **System** · 🤖 **AI coding** | Converter, live PC stats, your agent sessions |
+| ⏱️ **Timer** | Timer, Pomodoro, stopwatch, Focus Mode |
+| 💻 **Dev** | Git status, listening ports, snippets and clipboard decoding |
+| 📊 **System** · 🤖 **AI coding** | Live PC stats; your agent sessions with each Claude session's context use |
 
 The **pet** reacts to your PC. The first matching mood wins:
 
@@ -199,7 +201,7 @@ Settings → **Choose a pet…** loads a pet in the Codex Pets format (a `.zip` 
 Get `Islet-Setup-<version>.exe` from the [**latest release**](https://github.com/goprocker/Islet/releases/latest) and run it. It installs for everyone on the PC (Windows asks for admin permission once), adds a Start menu entry and a firewall rule for Phone drop on private networks. From 2.1 on, Islet downloads updates from GitHub Releases by itself and installs them when you quit, or from tray → **Restart to update**.
 
 > [!NOTE]
-> Production releases are Authenticode-signed by **SignPath Foundation**. Islet's updater pins that publisher identity and release CI refuses to publish when signing is unavailable or the certificate subject is unexpected.
+> The installer is not code-signed yet, so SmartScreen may warn about it and Smart App Control may block it. If it's blocked, [run from source](#run-from-source).
 
 ### Run from source
 
@@ -268,12 +270,16 @@ The welcome screen offers to install the hooks. Tray → **Connect to Claude Cod
 Stored in `%APPDATA%\islet\config.json` and edited from the settings window. Hand edits are picked up within 2 s. A file that can't be read is left alone, not overwritten.
 
 <details>
-<summary><b>All 23 settings</b></summary>
+<summary><b>All 27 settings</b></summary>
 
 | Key | Default | Meaning |
 |---|---|---|
 | `size` | `normal` | `compact`, `normal` or `large` |
 | `accent` | `album` | `album` (colour from the art) or `#rrggbb` |
+| `themeBase` | `midnight` | `midnight`, `graphite`, `ocean`, `forest`, `mocha` or `plum` |
+| `pillShape` | `notch` | `notch`, `island` or `square` |
+| `motion` | `bouncy` | `bouncy`, `smooth`, `snappy` or `off` |
+| `githubLive` | `true` | Show GitHub Actions, PR checks and deploys (needs `gh`) |
 | `idleHide` | `false` | Shrink to a thin line when nothing is happening |
 | `powerAnim` | `true` | Black hole animation when the charger goes in or out |
 | `powerAnimStyle` | `cinematic` | `cinematic` or `subtle` |
@@ -331,7 +337,7 @@ src/main.js ── window, tray, hotkeys, powerMonitor, config, IPC
 ### 🛠️ Develop
 
 ```powershell
-npm test     # 37 test files, node --test
+npm test     # 66 test files, node --test
 node_modules\electron\dist\electron.exe . --remote-debugging-port=9333   # then chrome://inspect
 ```
 
