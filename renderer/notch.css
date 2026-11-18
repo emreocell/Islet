@@ -602,13 +602,16 @@ button.saveErr { cursor: pointer; }
 .ai .ctx[data-level=mid] i { background: var(--warn); }
 .ai .ctx[data-level=high] i { background: #ff453a; }
 .ai .ctx small { margin-left: 0; }
-.limits { display: grid; gap: 6px; margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.05); }
-.limits .ctx { display: flex; align-items: center; gap: 8px; }
-.limits .ctx b { flex: 0 0 82px; font-size: 11px; font-weight: 600; opacity: .85; }
-.limits .ctx i { display: block; height: 4px; border-radius: 2px; background: #30d158; flex: none; }
-.limits .ctx[data-level=mid] i { background: var(--warn); }
-.limits .ctx[data-level=high] i { background: #ff453a; }
-.limits .ctx small { font-size: 11px; opacity: .7; white-space: nowrap; }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; margin: 0 0 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,.05); }
+.limits .ring { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; --c: #30d158; }
+.limits .ring[data-level=mid] { --c: var(--warn); }
+.limits .ring[data-level=high] { --c: #ff453a; }
+.limits .ring[data-level=none] { --c: rgba(255,255,255,.35); }
+.limits .ring i { position: relative; width: 52px; height: 52px; border-radius: 50%; margin-bottom: 3px; background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,.1) 0); }
+.limits .ring i::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #111; }
+.limits .ring i span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 700; font-style: normal; }
+.limits .ring b { font-size: 11px; font-weight: 600; opacity: .9; }
+.limits .ring small { font-size: 10px; opacity: .6; white-space: nowrap; }
 .ai p { color: #a1a1aa; font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* the tall view: hide the normal view under the dock, and keep small round remove buttons small */

@@ -1354,12 +1354,14 @@ async function drawLimits(force) {
   limitsAt = Date.now();
   const r = await window.bridge.aiLimits().catch(() => null), now = Date.now(), rows = [];
   const until = t => { const m = Math.max(0, Math.round((t - now) / 60000)); return m >= 1440 ? `${Math.round(m / 1440)}d` : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
-  const bar = (name, label, pct, title) => {
-    const m = document.createElement("div");
-    m.className = "ctx"; m.title = title;
-    if (pct != null) m.dataset.level = pct >= 85 ? "high" : pct >= 65 ? "mid" : "ok";
-    m.append(Object.assign(document.createElement("b"), { textContent: name }), Object.assign(document.createElement("i"), {}), Object.assign(document.createElement("small"), { textContent: label }));
-    m.children[1].style.width = pct == null ? "0" : Math.max(2, pct) * 0.6 + "%";
+  // one ring per limit: the percentage used in the middle, the name and reset time under it
+  const bar = (name, center, sub, pct, title) => {
+    const m = document.createElement("div"), ring = document.createElement("i");
+    m.className = "ring"; m.title = title;
+    m.dataset.level = pct == null ? "none" : pct >= 85 ? "high" : pct >= 65 ? "mid" : "ok";
+    ring.style.setProperty("--p", pct == null ? 0 : pct);
+    ring.append(Object.assign(document.createElement("span"), { textContent: center }));
+    m.append(ring, Object.assign(document.createElement("b"), { textContent: name }), Object.assign(document.createElement("small"), { textContent: sub }));
     rows.push(m);
   };
   for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
@@ -1367,13 +1369,13 @@ async function drawLimits(force) {
     if (!w) continue;
     const reset = w.resetsAt && w.resetsAt <= now; // window rolled over since Codex last ran
     const pct = reset ? 0 : w.pct;
-    bar(`Codex ${n}`, `${pct}% used${w.resetsAt && !reset ? ` · resets in ${until(w.resetsAt)}` : ""}`, pct, `Codex ${k === "session" ? "5-hour" : "weekly"} limit, as Codex last reported it`);
+    bar(`Codex ${n}`, `${pct}%`, w.resetsAt && !reset ? `resets ${until(w.resetsAt)}` : "fresh", pct, `Codex ${k === "session" ? "5-hour" : "weekly"} limit, as Codex last reported it`);
   }
   for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
     const w = r?.claude?.[k], p = r?.claudePlan?.[k];
-    if (p) { bar(`Claude ${n}`, `${p.pct}% used${p.resetsAt ? ` · resets in ${until(p.resetsAt)}` : ""}`, p.pct, `Claude ${k === "session" ? "5-hour" : "weekly"} limit${w ? ` · ${w.tokens.toLocaleString()} tokens, ${w.turns} replies tracked locally` : ""}`); continue; }
+    if (p) { bar(`Claude ${n}`, `${p.pct}%`, p.resetsAt ? `resets ${until(p.resetsAt)}` : "used", p.pct, `Claude ${k === "session" ? "5-hour" : "weekly"} limit${w ? ` · ${w.tokens.toLocaleString()} tokens, ${w.turns} replies tracked locally` : ""}`); continue; }
     if (!w) continue;
-    bar(`Claude ${n}`, `${short(w.tokens)} tokens · ${w.turns} replies`, null, `Claude Code tokens in the last ${k === "session" ? "5 hours" : "7 days"} (input, cache writes and output), from local transcripts`);
+    bar(`Claude ${n}`, short(w.tokens), `${w.turns} replies`, null, `Claude Code tokens in the last ${k === "session" ? "5 hours" : "7 days"} (input, cache writes and output), from local transcripts`);
   }
   $("aiLimits").replaceChildren(...rows);
   $("aiLimits").hidden = !rows.length;
