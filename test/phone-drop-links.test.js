@@ -35,7 +35,10 @@ test("the reusable secret stays in the QR fragment and API traffic is authentica
     assert.ok(/^[0-9a-f]{64}$/.test(u.hash.slice(1)));
     assert.ok(!u.pathname.includes(u.hash.slice(1)));
     assert.ok(!html.includes("secret.txt"));
-    const script = html.match(/<script>([\s\S]+)<\/script>/)[1];
+    // the page has exactly one inline script; take it by position rather than by an HTML regex
+    const start = html.indexOf("<script>") + "<script>".length, stop = html.lastIndexOf("</script>");
+    assert.ok(start > "<script>".length - 1 && stop > start);
+    const script = html.slice(start, stop);
     const element = {};
     const context = { location: { hash: u.hash, pathname: u.pathname, href: url }, history: { replaceState() {} }, TextEncoder, URL, Uint8Array, Uint32Array, DataView, crypto: { getRandomValues: b => b.fill(1) }, fetch: async () => ({ ok: false }), document: { getElementById: () => element }, setTimeout };
     vm.runInNewContext(`${script};globalThis.browserHmac=(key,message)=>hx(hmac(bytes(key),enc.encode(message)))`, context);
