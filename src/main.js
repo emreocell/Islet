@@ -11,6 +11,7 @@ const icons = require("./icons");
 const bridge = require("./claude-bridge");
 const lyrics = require("./lyrics");
 const weather = require("./weather");
+const usage = require("./usage");
 const pomodoro = require("./pomodoro");
 const focusLog = require("./focus-log");
 const { clipHistory } = require("./clip-history");
@@ -382,7 +383,7 @@ function readSession(t, entries) {
     if (actions.length === 3) break;
   }
   if (!actions.length) return null;
-  return { id: t.p, agent: "claude", project: cwd ? path.basename(cwd) : "Claude", cwd, status, actions, time: actions[0].time };
+  return { id: t.p, agent: "claude", project: cwd ? path.basename(cwd) : "Claude", cwd, status, actions, time: actions[0].time, context: usage.contextOf(entries) };
 }
 // Codex sessions come straight from its hooks (claude-bridge.js)
 function codexSessions() {

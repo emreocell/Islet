@@ -89,7 +89,7 @@ body {
 .open .full { opacity: 1; pointer-events: auto; transition-delay: .12s; }
 
 /* compact */
-.pill { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 10px; }
+.pill { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 18px 0 16px; }
 .pill .art { width: 18px; height: 18px; border-radius: 5px; }
 .pill .art:not([src]) { display: none; } /* nothing playing: no empty art slot */
 .notch:not(.eq) .pill #mini { display: none; } /* nothing playing, or a silent player: no flat line of dashes */
@@ -355,7 +355,7 @@ button.link:hover { color: var(--text); }
 .notch.quiet .pill > :not(.dot):not(.pet):not(.petsay):not(.ptime) { display: none; }
 /* the time, always in the closed pill */
 .pill .ptime { font-size: 12px; font-weight: 600; color: #fafafa; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.notch.talking:not(.open) .pill .ptime { display: none; } /* the cat's words take its place */
+.pill .ptime { display: none; } /* no clock in the closed pill: Windows already shows the time */
 /* what the cat says, beside it in the closed pill */
 .petsay { display: none; font-size: 12px; font-weight: 600; color: #fafafa; white-space: nowrap; animation: sayin .25s ease-out; }
 .notch.talking:not(.open) .petsay { display: block; }
@@ -597,6 +597,11 @@ button.saveErr { cursor: pointer; }
 .ai li[data-status=done] i { background: #30d158; }
 .ai b { font-size: 12px; }
 .ai small { color: var(--muted); font-size: 10.5px; margin-left: auto; }
+.ai .ctx { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+.ai .ctx i { display: block; height: 3px; border-radius: 2px; background: #30d158; flex: none; max-width: 70%; }
+.ai .ctx[data-level=mid] i { background: var(--warn); }
+.ai .ctx[data-level=high] i { background: #ff453a; }
+.ai .ctx small { margin-left: 0; }
 .ai p { color: #a1a1aa; font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* the tall view: hide the normal view under the dock, and keep small round remove buttons small */

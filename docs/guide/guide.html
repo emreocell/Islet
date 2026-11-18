@@ -75,7 +75,7 @@ pre.t { padding: 3mm 4mm; margin: 1.5mm 0 1.5mm; font-size: 8pt; }
   <p style="color:#6e6e73">Music, Claude Code and Codex activity, notifications, battery and more,<br>in one small black pill at the top of your screen.</p>
   <div class="meta">
     <div><small>MADE BY</small><b>Gopinath</b></div>
-    <div><small>VERSION</small><b>2.3.61</b></div>
+    <div><small>VERSION</small><b>2.5.0</b></div>
     <div><small>PLATFORM</small><b>Windows 10 / 11</b></div>
     <div><small>BUILT WITH</small><b>Electron 45</b></div>
   </div>
@@ -226,7 +226,7 @@ pre.t { padding: 3mm 4mm; margin: 1.5mm 0 1.5mm; font-size: 8pt; }
     <tr><td>Registry</td><td>HKCU Notifications\Settings</td><td>Turning Windows' banners off and back on</td></tr>
     <tr><td>Network</td><td>fetch()</td><td>lrclib.net, Open-Meteo, your ICS link, optional Spotify Web API</td></tr>
     <tr><td>Agent hooks</td><td>HTTP server on 127.0.0.1:47321</td><td>Claude Code and Codex hooks post events</td></tr>
-    <tr><td>Tests</td><td>node --test</td><td>56 files, 375 tests</td></tr>
+    <tr><td>Tests</td><td>node --test</td><td>65 files, 411 tests</td></tr>
     <tr><td>Packaging</td><td>electron-builder 26 (NSIS)</td><td>One-click per-user installer</td></tr></table>
   <div class="foot"><span>Islet · Project Guide</span><span>© 2026 Gopinath. All rights reserved.</span><span class="n"></span></div>
 </section>
@@ -389,7 +389,7 @@ npm start</pre>
   <p style="margin-top:3mm;font-size:9pt;color:#6e6e73">If config.json can't be read (for example during a hand edit), Islet keeps the current settings and leaves the file as it is.</p>
   <div class="kick">SECTION 12</div>
   <h1>Build, test, debug</h1>
-  <pre>npm test        # node --test test/*.test.js  (56 files, 375 tests)
+  <pre>npm test        # node --test test/*.test.js  (65 files, 411 tests)
 npm run dist    # NSIS installer, run from PowerShell
 
 # inspect the notch with Chrome DevTools
@@ -604,9 +604,9 @@ node_modules\electron\dist\electron.exe . --remote-debugging-port=9333</pre>
 </section>
 
 <section class="page">
-  <div class="kick">SECTION 14 · 2.4 AND 2.5</div>
-  <h1>What's new in 2.4 and 2.5</h1>
-  <div class="lead">Roadmap chunks 1 and 2: the notch reacts to your files, devices, builds, audio, screen and notifications, and you can restyle it. On <code>main</code>, not released yet.</div>
+  <div class="kick">SECTION 14 · 2.5.0</div>
+  <h1>What's new in 2.5.0</h1>
+  <div class="lead">Roadmap chunks 1 and 2: the notch reacts to your files, devices, builds, audio, screen and notifications, and you can restyle it. Both shipped together as 2.5.0 on Nov 16, 2026.</div>
   <h2>2.4: smart actions and live activities</h2>
   <ul style="font-size:9.5pt">
     <li><b>Smart file actions</b>: right-click a shelf file to resize, fit to 1920 px, convert PNG↔JPG or compress an image, or ZIP any file or folder. Results land next to the original and never overwrite it.</li>
@@ -621,11 +621,12 @@ node_modules\electron\dist\electron.exe . --remote-debugging-port=9333</pre>
     <li><b>Notification actions</b>: pop-ups get Open, Snooze 10 min, Dismiss (also clears it from Action Center) and Reply in app.</li>
     <li><b>Theme Studio</b> (Settings → Look): themes Midnight, Graphite, Ocean, Forest, Mocha and Plum; pill shapes Notch, Island and Square; motion Bouncy, Smooth, Snappy or Off; share a look as an <code>islet-theme:</code> code.</li>
     <li><b>Snappier Home</b>: Quick Settings load as the notch opens, and the charging glow shows over the tall view.</li>
+    <li><b>Also in 2.5.0</b>: Focus Mode 2.0, a tabbed Dev panel (git, ports, snippets, clipboard decoding), Clipboard Actions that clean links and transform text, a closed pill that no longer keeps widening, and line icons on notifications.</li>
   </ul>
   <h2>Around the code</h2>
   <ul style="font-size:9.5pt">
     <li><b>New modules</b>: <code>file-actions.js</code>, <code>bt-connect.js/.ps1</code>, <code>gh-activity.js</code>, <code>mixer.js/.ps1</code> (one PowerShell that stays up and answers lines), <code>recording.js</code>, <code>notif-dismiss.ps1</code>, <code>theme-studio.js</code>, <code>renderer/rec.js</code>.</li>
-    <li><b>Tests</b>: 375 → 404.</li>
+    <li><b>Tests</b>: 375 → 411.</li>
   </ul>
   <div class="foot"><span>Islet · Project Guide</span><span>© 2026 Gopinath. All rights reserved.</span><span class="n"></span></div>
 </section>
@@ -809,7 +810,7 @@ if (gen === generation &amp;&amp; text !== null) onEvent(nextEvent(text));</pre>
   <h2>Security</h2>
   <div class="qa"><div><b>What's the security model?</b><p>Page isolated from Node, fixed bridge API, server on loopback only, every external input validated, outside text set with <code>textContent</code>, and link schemes allowlisted.</p></div><div><b>What's the weakest point?</b><p>The hook and listener use mutual HMAC proof keyed by <code>~/.islet-hook-token</code>. Other callers cannot forge messages without that secret; a process running as the same Windows user can read it and impersonate a hook.</p></div><div><b>Could a malicious notification attack the app?</b><p>Its text is only ever shown as text. Clicking it opens a URL only if the scheme is on the allowlist; otherwise it opens the sending app.</p></div></div>
   <h2>Testing and process</h2>
-  <div class="qa"><div><b>How is it tested?</b><p>375 tests in 56 files using Node's built-in <code>node --test</code>, with no extra dependencies. Mostly logic: calendar rules, time zones, lyrics, hook install, and races. Fakes replace the network and <code>http.createServer</code>.</p></div><div><b>How do you test time zones?</b><p>The calendar tests run with the host set to different zones, such as Asia/Kolkata and UTC, including daylight-saving changes.</p></div><div><b>What isn't tested?</b><p>The real screen and mouse, and the PowerShell helpers. I check those by hand, and through Chrome DevTools using <code>--remote-debugging-port=9333</code>.</p></div><div><b>Did you use AI to build this?</b><p>Answer truthfully. A strong answer says what you decided, how you checked the result, and which bugs you found. This guide is there so you can back that up.</p></div></div>
+  <div class="qa"><div><b>How is it tested?</b><p>411 tests in 65 files using Node's built-in <code>node --test</code>, with no extra dependencies. Mostly logic: calendar rules, time zones, lyrics, hook install, and races. Fakes replace the network and <code>http.createServer</code>.</p></div><div><b>How do you test time zones?</b><p>The calendar tests run with the host set to different zones, such as Asia/Kolkata and UTC, including daylight-saving changes.</p></div><div><b>What isn't tested?</b><p>The real screen and mouse, and the PowerShell helpers. I check those by hand, and through Chrome DevTools using <code>--remote-debugging-port=9333</code>.</p></div><div><b>Did you use AI to build this?</b><p>Answer truthfully. A strong answer says what you decided, how you checked the result, and which bugs you found. This guide is there so you can back that up.</p></div></div>
   <div class="foot"><span>Islet · Project Guide</span><span>© 2026 Gopinath. All rights reserved.</span><span class="n"></span></div>
 </section>
 

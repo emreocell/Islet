@@ -33,8 +33,6 @@
     <button id="notesBtn" data-panel="notesPanel" aria-pressed="false" title="Notes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/></svg><span>Notes</span></button>
     <button id="timerBtn" data-panel="timerPanel" aria-pressed="false" title="Timer and focus"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg><span>Timer and focus</span></button>
     <button id="shelfBtn" data-panel="shelfPanel" aria-pressed="false" title="File shelf"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span>File shelf</span></button>
-    <button id="weatherBtn" data-panel="weatherPanel" aria-pressed="false" title="Weather"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg><span>Weather</span></button>
-    <button id="unitsBtn" data-panel="unitsPanel" aria-pressed="false" title="Units"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg><span>Units</span></button>
     <button id="colorBtn" data-panel="colorPanel" aria-pressed="false" title="Colour picker"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg><span>Colour picker</span></button>
     <button id="sysBtn" data-panel="sysPanel" aria-pressed="false" title="System"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>System</span></button>
     <button id="aiBtn" data-panel="aiPanel" aria-pressed="false" title="AI coding"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg><span>AI coding</span></button>
@@ -127,18 +125,6 @@
         <div class="tbig"><strong id="timerBig">0:00</strong><small id="timerWhat">No timer running</small></div>
         <div class="chips" id="timerChips"><button data-min="5">5 min</button><button data-min="15">15 min</button><button data-min="25">25 min</button><button data-min="50">50 min</button><button data-min="pomodoro">Pomodoro</button><button data-min="0">Cancel</button><button id="swBtn">Stopwatch</button></div>
         <p class="fstats" id="focusStats"></p>
-      </section>
-      <section class="panel" id="weatherPanel" hidden aria-label="Weather">
-        <header><b id="wPlace">Weather</b><span class="dsub" id="wMeta"></span></header>
-        <div class="wnow"><span id="wIcon"></span><strong id="wTemp"></strong><span id="wLabel"></span></div>
-        <ol class="whours" id="wHours"></ol>
-        <ol class="wdays" id="wDays"></ol>
-        <p class="empty" id="wEmpty" hidden>Set a city in Settings to see the weather.</p>
-      </section>
-      <section class="panel" id="unitsPanel" hidden aria-label="Units">
-        <header><b>Units</b><select id="uKind" aria-label="What to convert"></select></header>
-        <div class="ubox"><input id="uIn" type="number" value="1" aria-label="Value"><select id="uFrom" aria-label="From"></select><span>=</span><output id="uOut"></output><select id="uTo" aria-label="To"></select></div>
-        <ul class="uall" id="uAll"></ul>
       </section>
       <section class="panel" id="colorPanel" hidden aria-label="Colour picker">
         <header><b>Colour picker</b><button id="colorPick">Pick from screen</button></header>
@@ -248,7 +234,6 @@
 <script src="sliders.js"></script>
 <script src="pet.js"></script>
 <script src="rec.js"></script>
-<script src="units.js"></script>
 <script src="colors.js"></script>
 <script src="notch.js"></script>
 </body>

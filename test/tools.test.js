@@ -3,44 +3,8 @@ const assert = require("node:assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { convert, show } = require("../renderer/units");
 const { loadLinks, saveLinks, clean } = require("../src/links");
 const { lanAddress, safeName, freePath } = require("../src/phone-drop");
-
-test("units convert by factor, and temperature through Celsius", () => {
-  assert.strictEqual(show(convert(1, "length", "km", "m")), "1000");
-  assert.strictEqual(show(convert(12, "length", "in", "ft")), "1");
-  assert.strictEqual(show(convert(100, "temperature", "°C", "°F")), "212");
-  assert.strictEqual(show(convert(0, "temperature", "K", "°C")), "-273.15");
-  assert.strictEqual(show(convert(1, "data", "GB", "MB")), "1024");
-});
-
-test("units convert area and pressure with exact factors", () => {
-  assert.strictEqual(show(convert(1, "area", "km²", "m²")), "1000000");
-  assert.strictEqual(show(convert(1, "area", "m²", "cm²")), "10000");
-  assert.strictEqual(show(convert(1, "area", "cm²", "mm²")), "100");
-  assert.strictEqual(show(convert(1, "area", "hectare", "m²")), "10000");
-  assert.strictEqual(show(convert(1, "area", "km²", "hectare")), "100");
-  assert.strictEqual(show(convert(144, "area", "in²", "ft²")), "1");
-  assert.strictEqual(show(convert(1, "area", "in²", "mm²")), "645.16");
-  assert.strictEqual(show(convert(1, "area", "ft²", "m²")), "0.092903");
-  assert.ok(Math.abs(convert(1, "area", "acre", "m²") - 4046.8564224) < 1e-9);
-  assert.strictEqual(show(convert(640, "area", "acre", "km²")), "2.58999");
-  assert.strictEqual(show(convert(1, "pressure", "kPa", "Pa")), "1000");
-  assert.strictEqual(show(convert(1, "pressure", "bar", "kPa")), "100");
-  assert.strictEqual(show(convert(1, "pressure", "atm", "Pa")), "101325");
-  assert.strictEqual(show(convert(1, "pressure", "atm", "bar")), "1.01325");
-  assert.strictEqual(show(convert(1, "pressure", "psi", "Pa")), "6894.76");
-  assert.strictEqual(show(convert(1, "pressure", "atm", "psi")), "14.6959");
-  assert.ok(Math.abs(convert(1, "pressure", "psi", "Pa") - 6894.757293168) < 1e-9);
-  assert.ok(Number.isNaN(convert(1, "area", "m²", "Pa")));
-});
-
-test("units refuse unknown units and empty input", () => {
-  assert.ok(Number.isNaN(convert(1, "length", "km", "kg")));
-  assert.ok(Number.isNaN(convert("", "length", "km", "m")));
-  assert.strictEqual(show(NaN), "");
-});
 
 test("links keep only http(s) and name them after the host", () => {
   assert.deepStrictEqual(clean({ url: "https://www.github.com/x" }), { title: "github.com", url: "https://www.github.com/x" });
