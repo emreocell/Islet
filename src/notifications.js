@@ -38,10 +38,29 @@ function textValue(raw) {
 }
 function texts(xml) {
   const out = [];
-  // a CDATA section may itself contain "</text>"
-  for (const m of xml.matchAll(/<text\b([^>]*?)(?:\/>|>((?:<!\[CDATA\[[\s\S]*?\]\]>|(?!<\/text>)[\s\S])*)<\/text>)/g)) {
-    if (/\bplacement\s*=\s*["']attribution["']/.test(m[1])) continue;
-    const t = textValue(m[2] || "").trim();
+  // scanned by hand, not with one big regex: a CDATA section may itself contain "</text>",
+  // and a pattern for that backtracks badly on long payloads
+  const open = /<text\b([^>]*)>/g;
+  let m;
+  while ((m = open.exec(xml))) {
+    let attrs = m[1], body = "";
+    if (attrs.endsWith("/")) attrs = attrs.slice(0, -1);
+    else {
+      let i = open.lastIndex, end = -1;
+      while (i < xml.length) {
+        if (xml.startsWith("<![CDATA[", i)) {
+          const c = xml.indexOf("]]>", i + 9);
+          if (c < 0) break;
+          i = c + 3;
+        } else if (xml.startsWith("</text>", i)) { end = i; break; }
+        else i++;
+      }
+      if (end < 0) continue; // never closed: not a text element
+      body = xml.slice(open.lastIndex, end);
+      open.lastIndex = end + 7;
+    }
+    if (/\bplacement\s*=\s*["']attribution["']/.test(attrs)) continue;
+    const t = textValue(body).trim();
     if (t) out.push(t);
   }
   return out;

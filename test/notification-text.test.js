@@ -30,3 +30,10 @@ test("attribution text is still left out, with either quote", () => {
 test("attributes, empty elements and other tags", () => {
   assert.deepStrictEqual(texts(`<text id="1" hint-maxLines="2">One</text><text/><text></text><text>  </text><textbox>no</textbox><text>Two</text>`), ["One", "Two"]);
 });
+test("long or unclosed payloads are scanned quickly", () => {
+  const junk = "<text>" + "<![CDATA[x".repeat(5000) + "a".repeat(50000);
+  const t = Date.now();
+  assert.deepStrictEqual(texts(junk), []);
+  assert.deepStrictEqual(texts("<text>" + "a".repeat(100000) + "</text><text/>"), ["a".repeat(100000)]);
+  assert.ok(Date.now() - t < 1000);
+});
