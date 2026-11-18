@@ -602,16 +602,30 @@ button.saveErr { cursor: pointer; }
 .ai .ctx[data-level=mid] i { background: var(--warn); }
 .ai .ctx[data-level=high] i { background: #ff453a; }
 .ai .ctx small { margin-left: 0; }
-.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; margin: 0 0 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,.05); }
-.limits .ring { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; --c: #30d158; }
-.limits .ring[data-level=mid] { --c: var(--warn); }
-.limits .ring[data-level=high] { --c: #ff453a; }
-.limits .ring[data-level=none] { --c: rgba(255,255,255,.35); }
-.limits .ring i { position: relative; width: 52px; height: 52px; border-radius: 50%; margin-bottom: 3px; background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,.1) 0); }
-.limits .ring i::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #111; }
-.limits .ring i span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 700; font-style: normal; }
-.limits .ring b { font-size: 11px; font-weight: 600; opacity: .9; }
-.limits .ring small { font-size: 10px; opacity: .6; white-space: nowrap; }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0 0 12px; }
+.lcard { --a: #d97757; padding: 12px 14px 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,.07); background: linear-gradient(160deg, color-mix(in srgb, var(--a) 12%, transparent), rgba(255,255,255,.03) 60%); }
+.lcard[data-tool=codex] { --a: #7c9cff; }
+.lcard header { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+.lcard header i { width: 8px; height: 8px; border-radius: 50%; background: var(--a); box-shadow: 0 0 8px var(--a); }
+.lcard header b { font-size: 13px; font-weight: 650; }
+.lcard header small { margin-left: auto; font-size: 10px; opacity: .55; }
+.lrings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lring { --c: var(--a); display: flex; align-items: center; gap: 10px; }
+.lring[data-level=mid] { --c: var(--warn); }
+.lring[data-level=high] { --c: #ff453a; }
+.lring[data-level=none] { --c: rgba(255,255,255,.25); }
+.ldial { position: relative; width: 56px; height: 56px; flex: none; }
+.ldial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ldial circle { fill: none; stroke-width: 5; }
+.ldial .track { stroke: rgba(255,255,255,.08); }
+.ldial .fill { stroke: var(--c); stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--c) 60%, transparent)); }
+.lmid { position: absolute; inset: 0; display: grid; place-items: center; }
+.lmid b { font-size: 15px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.lmid small { font-size: 9px; font-weight: 600; opacity: .6; margin-left: 1px; }
+.ltxt { display: grid; gap: 2px; min-width: 0; }
+.ltxt b { font-size: 12px; font-weight: 600; }
+.ltxt small { font-size: 10px; opacity: .55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lcard p { margin: 9px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06); font-size: 10px; opacity: .55; }
 .ai p { color: #a1a1aa; font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* the tall view: hide the normal view under the dock, and keep small round remove buttons small */

@@ -1347,38 +1347,59 @@ function drawAi() {
   }));
 }
 window.bridge.onClaude(() => { if (openPanel === "aiPanel") { drawAi(); drawLimits(); } });
-// plan limits (Codex logs them) and tracked usage (Claude, from its transcripts); at most every 30 s
+// plan limits (Codex logs them, Claude's come from its usage endpoint) and tracked usage; at most every 30 s
 let limitsAt = 0;
+const SVGNS = "http://www.w3.org/2000/svg";
 async function drawLimits(force) {
   if (!force && Date.now() - limitsAt < 30000) return;
   limitsAt = Date.now();
-  const r = await window.bridge.aiLimits().catch(() => null), now = Date.now(), rows = [];
-  const until = t => { const m = Math.max(0, Math.round((t - now) / 60000)); return m >= 1440 ? `${Math.round(m / 1440)}d` : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
-  // one ring per limit: the percentage used in the middle, the name and reset time under it
-  const bar = (name, center, sub, pct, title) => {
-    const m = document.createElement("div"), ring = document.createElement("i");
-    m.className = "ring"; m.title = title;
-    m.dataset.level = pct == null ? "none" : pct >= 85 ? "high" : pct >= 65 ? "mid" : "ok";
-    ring.style.setProperty("--p", pct == null ? 0 : pct);
-    ring.append(Object.assign(document.createElement("span"), { textContent: center }));
-    m.append(ring, Object.assign(document.createElement("b"), { textContent: name }), Object.assign(document.createElement("small"), { textContent: sub }));
-    rows.push(m);
+  const r = await window.bridge.aiLimits().catch(() => null), now = Date.now(), cards = [];
+  const until = t => { const m = Math.max(0, Math.round((t - now) / 60000)); return m >= 1440 ? `${Math.round(m / 1440)}d ${Math.round((m % 1440) / 60)}h` : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
+  // a ring with rounded ends that fills to pct; null draws an empty track with a number in it
+  const ring = (label, pct, center, sub, title) => {
+    const box = el("div", { className: "lring", title }), C = 2 * Math.PI * 22;
+    box.dataset.level = pct == null ? "none" : pct >= 85 ? "high" : pct >= 65 ? "mid" : "ok";
+    const svg = document.createElementNS(SVGNS, "svg");
+    svg.setAttribute("viewBox", "0 0 52 52");
+    for (const cls of ["track", "fill"]) {
+      const c = document.createElementNS(SVGNS, "circle");
+      for (const [k, v] of Object.entries({ cx: 26, cy: 26, r: 22, class: cls })) c.setAttribute(k, v);
+      if (cls === "fill") { c.style.strokeDasharray = C; c.style.strokeDashoffset = C; requestAnimationFrame(() => requestAnimationFrame(() => { c.style.strokeDashoffset = C * (1 - (pct || 0) / 100); })); }
+      svg.append(c);
+    }
+    const mid = el("div", { className: "lmid" }, el("b", { textContent: center }));
+    if (pct != null) mid.firstChild.append(el("small", { textContent: "%" }));
+    box.append(el("div", { className: "ldial" }, svg, mid), el("div", { className: "ltxt" }, el("b", { textContent: label }), el("small", { textContent: sub })));
+    return box;
   };
-  for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
-    const w = r?.codex?.[k];
-    if (!w) continue;
-    const reset = w.resetsAt && w.resetsAt <= now; // window rolled over since Codex last ran
-    const pct = reset ? 0 : w.pct;
-    bar(`Codex ${n}`, `${pct}%`, w.resetsAt && !reset ? `resets ${until(w.resetsAt)}` : "fresh", pct, `Codex ${k === "session" ? "5-hour" : "weekly"} limit, as Codex last reported it`);
+  const card = (tool, name, note, rings, foot) => {
+    const c = el("div", { className: "lcard" }, el("header", {}, el("i"), el("b", { textContent: name }), el("small", { textContent: note })), el("div", { className: "lrings" }, ...rings));
+    c.dataset.tool = tool;
+    if (foot) c.append(el("p", { textContent: foot }));
+    cards.push(c);
+  };
+  const LBL = { session: "5-hour", week: "Weekly" };
+  // Claude: plan percentages when the usage call works, otherwise the tokens counted locally
+  const cp = r?.claudePlan, cu = r?.claude;
+  if (cp || cu) {
+    const rings = ["session", "week"].map(k => {
+      const p = cp?.[k], w = cu?.[k];
+      return p ? ring(LBL[k], p.pct, String(p.pct), p.resetsAt ? `${until(p.resetsAt)} left` : "used", `Claude ${LBL[k].toLowerCase()} limit`)
+        : ring(LBL[k], null, w ? short(w.tokens) : "—", "tokens", `Claude Code tokens in the last ${k === "session" ? "5 hours" : "7 days"}, from local transcripts`);
+    });
+    const s = cu?.session;
+    card("claude", "Claude", cp ? "Plan limits" : "Tracked locally", rings, s && cp ? `${short(s.tokens)} tokens · ${s.turns} replies in the last 5 h` : "");
   }
-  for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
-    const w = r?.claude?.[k], p = r?.claudePlan?.[k];
-    if (p) { bar(`Claude ${n}`, `${p.pct}%`, p.resetsAt ? `resets ${until(p.resetsAt)}` : "used", p.pct, `Claude ${k === "session" ? "5-hour" : "weekly"} limit${w ? ` · ${w.tokens.toLocaleString()} tokens, ${w.turns} replies tracked locally` : ""}`); continue; }
-    if (!w) continue;
-    bar(`Claude ${n}`, short(w.tokens), `${w.turns} replies`, null, `Claude Code tokens in the last ${k === "session" ? "5 hours" : "7 days"} (input, cache writes and output), from local transcripts`);
+  const cx = r?.codex;
+  if (cx) {
+    const rings = ["session", "week"].filter(k => cx[k]).map(k => {
+      const w = cx[k], fresh = w.resetsAt && w.resetsAt <= now; // the window rolled over since Codex last ran
+      return ring(LBL[k], fresh ? 0 : w.pct, String(fresh ? 0 : w.pct), fresh ? "fresh" : w.resetsAt ? `${until(w.resetsAt)} left` : "used", `Codex ${LBL[k].toLowerCase()} limit, as Codex last reported it`);
+    });
+    card("codex", "Codex", cx.at ? `Updated ${now - cx.at >= 864e5 ? `${Math.round((now - cx.at) / 864e5)}d ago` : ago(now - cx.at) === "now" ? "now" : `${ago(now - cx.at)} ago`}` : "Plan limits", rings);
   }
-  $("aiLimits").replaceChildren(...rows);
-  $("aiLimits").hidden = !rows.length;
+  $("aiLimits").replaceChildren(...cards);
+  $("aiLimits").hidden = !cards.length;
 }
 function short(n) { return n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n); }
 
