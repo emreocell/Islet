@@ -385,6 +385,58 @@ function readSession(t, entries) {
   if (!actions.length) return null;
   return { id: t.p, agent: "claude", project: cwd ? path.basename(cwd) : "Claude", cwd, status, actions, time: actions[0].time, context: usage.contextOf(entries) };
 }
+// ---- plan limits and usage for the AI coding panel ----
+// Codex: the limits it logs itself. Claude: tokens from local transcripts over the plan windows.
+const turnCache = new Map(); // path -> { m, turns }
+async function claudeUsage() {
+  if (!transcriptCandidates.size) await recentTranscripts(true);
+  const all = [];
+  for (const p of transcriptCandidates) {
+    const t = await statTranscript(p);
+    if (!t || Date.now() - t.m > 7 * 864e5) { turnCache.delete(p); continue; }
+    let c = turnCache.get(p);
+    if (!c || c.m !== t.m) {
+      try { c = { m: t.m, turns: usage.claudeTurns(await fs.promises.readFile(p, "utf8")) }; } catch { continue; }
+      turnCache.set(p, c);
+    }
+    all.push(...c.turns);
+  }
+  return usage.tally(all);
+}
+async function codexLimits() {
+  const root = path.join(os.homedir(), ".codex", "sessions");
+  const newest = async dir => (await fs.promises.readdir(dir).catch(() => [])).sort().reverse();
+  // sessions/YYYY/MM/DD/rollout-*.jsonl: newest few days, newest log that has limits
+  let checked = 0;
+  for (const y of await newest(root)) for (const mo of await newest(path.join(root, y))) for (const d of await newest(path.join(root, y, mo))) {
+    const dir = path.join(root, y, mo, d);
+    const files = await Promise.all((await newest(dir)).filter(f => f.endsWith(".jsonl")).map(f => statTranscript(path.join(dir, f))));
+    for (const f of files.filter(Boolean).sort((a, b) => b.m - a.m)) {
+      if (++checked > 20) return null;
+      const l = usage.codexLimits(await fs.promises.readFile(f.p, "utf8").catch(() => ""));
+      if (l) return l;
+    }
+  }
+  return null;
+}
+// Uses the login Claude Code already keeps; the token only ever goes to api.anthropic.com.
+// Never refreshed here: an expired token just means no percentages until Claude Code renews it.
+let planCache = { at: 0, v: null };
+async function claudePlan() {
+  if (Date.now() - planCache.at < 60000) return planCache.v;
+  planCache.at = Date.now();
+  try {
+    const c = JSON.parse(await fs.promises.readFile(path.join(os.homedir(), ".claude", ".credentials.json"), "utf8")).claudeAiOauth;
+    if (!c?.accessToken || (c.expiresAt && c.expiresAt < Date.now())) return (planCache.v = null);
+    const r = await fetch("https://api.anthropic.com/api/oauth/usage", { headers: { Authorization: `Bearer ${c.accessToken}`, "anthropic-beta": "oauth-2025-04-20" }, signal: AbortSignal.timeout(8000) });
+    planCache.v = r.ok ? usage.claudeLimits(await r.json()) : null;
+  } catch { planCache.v = null; }
+  return planCache.v;
+}
+ipcMain.handle("aiLimits", async () => {
+  const [claude, codex, claudePlanNow] = await Promise.all([claudeUsage().catch(() => null), codexLimits().catch(() => null), claudePlan()]);
+  return { claude, codex, claudePlan: claudePlanNow };
+});
 // Codex sessions come straight from its hooks (claude-bridge.js)
 function codexSessions() {
   const out = [];

@@ -840,7 +840,7 @@ function drawHello() {
 
 // ---- tools: one panel at a time, in the tall view with the dock under it ----
 const PANELS = [...document.querySelectorAll(".panel")].map(p => p.id);
-const OPENED = { dashPanel: () => { prefetchQuick(); drawHello(); closeMixer(); }, phonePanel: startPhone, linksPanel: loadLinks, clockPanel: drawClocks, timerPanel: () => { drawTimer(); drawFocusStats(); }, colorPanel: drawColors, sysPanel: drawSys, aiPanel: drawAi, devPanel: drawDev };
+const OPENED = { dashPanel: () => { prefetchQuick(); drawHello(); closeMixer(); }, phonePanel: startPhone, linksPanel: loadLinks, clockPanel: drawClocks, timerPanel: () => { drawTimer(); drawFocusStats(); }, colorPanel: drawColors, sysPanel: drawSys, aiPanel: () => { drawAi(); drawLimits(true); }, devPanel: drawDev };
 let openPanel = null;
 // toggle: a second click on the button that opened it closes it (the dock only switches)
 function showPanel(id, toggle = true) {
@@ -1346,7 +1346,39 @@ function drawAi() {
     return li;
   }));
 }
-window.bridge.onClaude(() => { if (openPanel === "aiPanel") drawAi(); });
+window.bridge.onClaude(() => { if (openPanel === "aiPanel") { drawAi(); drawLimits(); } });
+// plan limits (Codex logs them) and tracked usage (Claude, from its transcripts); at most every 30 s
+let limitsAt = 0;
+async function drawLimits(force) {
+  if (!force && Date.now() - limitsAt < 30000) return;
+  limitsAt = Date.now();
+  const r = await window.bridge.aiLimits().catch(() => null), now = Date.now(), rows = [];
+  const until = t => { const m = Math.max(0, Math.round((t - now) / 60000)); return m >= 1440 ? `${Math.round(m / 1440)}d` : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
+  const bar = (name, label, pct, title) => {
+    const m = document.createElement("div");
+    m.className = "ctx"; m.title = title;
+    if (pct != null) m.dataset.level = pct >= 85 ? "high" : pct >= 65 ? "mid" : "ok";
+    m.append(Object.assign(document.createElement("b"), { textContent: name }), Object.assign(document.createElement("i"), {}), Object.assign(document.createElement("small"), { textContent: label }));
+    m.children[1].style.width = pct == null ? "0" : Math.max(2, pct) * 0.6 + "%";
+    rows.push(m);
+  };
+  for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
+    const w = r?.codex?.[k];
+    if (!w) continue;
+    const reset = w.resetsAt && w.resetsAt <= now; // window rolled over since Codex last ran
+    const pct = reset ? 0 : w.pct;
+    bar(`Codex ${n}`, `${pct}% used${w.resetsAt && !reset ? ` · resets in ${until(w.resetsAt)}` : ""}`, pct, `Codex ${k === "session" ? "5-hour" : "weekly"} limit, as Codex last reported it`);
+  }
+  for (const [k, n] of [["session", "5 h"], ["week", "Week"]]) {
+    const w = r?.claude?.[k], p = r?.claudePlan?.[k];
+    if (p) { bar(`Claude ${n}`, `${p.pct}% used${p.resetsAt ? ` · resets in ${until(p.resetsAt)}` : ""}`, p.pct, `Claude ${k === "session" ? "5-hour" : "weekly"} limit${w ? ` · ${w.tokens.toLocaleString()} tokens, ${w.turns} replies tracked locally` : ""}`); continue; }
+    if (!w) continue;
+    bar(`Claude ${n}`, `${short(w.tokens)} tokens · ${w.turns} replies`, null, `Claude Code tokens in the last ${k === "session" ? "5 hours" : "7 days"} (input, cache writes and output), from local transcripts`);
+  }
+  $("aiLimits").replaceChildren(...rows);
+  $("aiLimits").hidden = !rows.length;
+}
+function short(n) { return n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n); }
 
 // a custom pet's sprite sheet steps through its frames; the cat animates with CSS instead
 // only the pet on screen is animated: the pill's while closed, the walker in the open view

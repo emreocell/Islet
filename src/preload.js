@@ -4,6 +4,7 @@ const on = ch => fn => ipcRenderer.on(ch, (_, d) => fn(d));
 contextBridge.exposeInMainWorld("bridge", {
   onMedia: on("media"),
   onClaude: on("claude"),
+  aiLimits: () => ipcRenderer.invoke("aiLimits"),
   onToggle: on("toggle"),
   onLevels: on("levels"),
   onVolume: on("volume"),
