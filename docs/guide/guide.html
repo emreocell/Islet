@@ -649,9 +649,10 @@ node_modules\electron\dist\electron.exe . --remote-debugging-port=9333</pre>
   <h2>Around the code</h2>
   <ul style="font-size:9.5pt">
     <li><b>Security (2.6.11)</b>: the three open CodeQL alerts are fixed: a notification regex that could backtrack badly (50,000 <code>&lt;</code> now take about 1 ms), a test's HTML script extractor, and an unchecked callback in <code>liveshot.js</code>.</li>
+    <li><b>Fixes (2.6.11)</b>: clipboard case actions keep non-English letters and Format JSON keeps numbers exact; shelf image actions and pet zip imports run in their own process, so neither freezes Islet; Dev snippets say <b>Not saved</b> and keep the edit; a failed <code>gh</code> poll no longer drops a watched CI run; Bluetooth keeps UTF-8 names and runs one watcher; a non-text <code>userName</code> in <code>config.json</code> no longer stops startup. Electron is 45.3.4.</li>
     <li><b>Installer wording</b>: assisted per-machine, as <code>package.json</code> configures it (<code>oneClick: false</code>, <code>perMachine: true</code>).</li>
     <li><b>Docs</b>: <code>docs/making-a-pet.md</code> explains the pet format and how a built-in pet is wired in.</li>
-    <li><b>Tests</b>: 411 → 415.</li>
+    <li><b>Tests</b>: 411 → 437.</li>
   </ul>
   <div class="foot"><span>Islet · Project Guide</span><span>© 2026 Gopinath. All rights reserved.</span><span class="n"></span></div>
 </section>
