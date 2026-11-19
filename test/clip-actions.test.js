@@ -34,3 +34,22 @@ test("transforms", () => {
   assert.strictEqual(run("urlDecode", run("urlEncode", "a b&c")), "a b&c");
   assert.strictEqual(run("nope", "x"), null);
 });
+test("case actions keep letters from any script (#251)", () => {
+  assert.strictEqual(run("camel", "தமிழ் பெயர்"), "தமிழ்பெயர்");
+  assert.strictEqual(run("snake", "தமிழ் பெயர்"), "தமிழ்_பெயர்");
+  assert.strictEqual(run("kebab", "தமிழ் பெயர்"), "தமிழ்-பெயர்");
+  assert.strictEqual(run("camel", "école déjà vu"), "écoleDéjàVu");
+  assert.strictEqual(run("snake", "ÉcoleDéjà"), "école_déjà");
+  // combining marks stay with their letter: e + U+0301
+  assert.strictEqual(run("kebab", "Café Noir"), "café-noir");
+  assert.strictEqual(run("camel", "привет мир"), "приветМир");
+});
+test("a case action that would clear the text is not offered (#251)", () => {
+  const ids = available("!!! ??? ...").map(a => a.id);
+  for (const id of ["camel", "snake", "kebab"]) {
+    assert.ok(!ids.includes(id), id);
+    assert.strictEqual(run(id, "!!! ??? ..."), null);
+  }
+  for (const t of ["தமிழ் பெயர்", "école déjà vu", "user profile id"])
+    for (const id of ["camel", "snake", "kebab"]) { const r = run(id, t); assert.ok(r === null || r.length > 0, id + " " + t); }
+});
