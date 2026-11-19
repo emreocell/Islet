@@ -27,7 +27,22 @@ function b64decode(t) {
   const out = Buffer.from(s, "base64").toString("utf8");
   return /[�\x00-\x08\x0E-\x1F]/.test(out) ? null : out;
 }
-function json(t, space) { try { return JSON.stringify(JSON.parse(t), null, space); } catch { return null; } }
+// numbers keep their exact text: JSON.parse would round 9007199254740993 and turn 1e400 into null,
+// so each number is passed back to stringify as its raw source (JSON.rawJSON); without that support
+// a number that would not survive the round trip makes the action decline instead of changing it
+function json(t, space) {
+  try {
+    let lossy = false;
+    const raw = typeof JSON.rawJSON === "function";
+    const v = JSON.parse(t, (k, val, ctx) => {
+      if (typeof val !== "number" || !ctx || typeof ctx.source !== "string") return val;
+      if (raw) return JSON.rawJSON(ctx.source);
+      if (JSON.stringify(val) !== ctx.source) lossy = true;
+      return val;
+    });
+    return lossy ? null : JSON.stringify(v, null, space);
+  } catch { return null; }
+}
 
 const ACTIONS = [
   { id: "cleanUrl", label: "Clean link", when: isUrl, run: cleanUrl },

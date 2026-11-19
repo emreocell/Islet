@@ -53,3 +53,14 @@ test("a case action that would clear the text is not offered (#251)", () => {
   for (const t of ["தமிழ் பெயர்", "école déjà vu", "user profile id"])
     for (const id of ["camel", "snake", "kebab"]) { const r = run(id, t); assert.ok(r === null || r.length > 0, id + " " + t); }
 });
+test("formatting JSON never changes a number (#252)", () => {
+  assert.strictEqual(run("jsonMin", '{"id": 9007199254740993}'), '{"id":9007199254740993}');
+  assert.strictEqual(run("jsonPretty", '{"id":9007199254740993}'), '{\n  "id": 9007199254740993\n}');
+  assert.strictEqual(run("jsonMin", '{"value": 1e400}'), '{"value":1e400}');
+  // nested objects and arrays, and number spellings that JSON.parse would rewrite
+  assert.strictEqual(run("jsonMin", '{ "a": [1.50, -0, 2E3, {"b": 123456789012345678901234567890}] }'),
+    '{"a":[1.50,-0,2E3,{"b":123456789012345678901234567890}]}');
+  assert.ok(available('{"id":9007199254740993}').some(a => a.id === "jsonPretty"));
+  assert.strictEqual(run("jsonMin", '{"a": 1, "b": [true, null, "x"]}'), '{"a":1,"b":[true,null,"x"]}');
+  assert.strictEqual(run("jsonMin", '[1, 2'), null);
+});
