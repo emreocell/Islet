@@ -899,7 +899,7 @@ const settingsView = () => ({ ...config, hooks: bridge.installed(), login: login
 ipcMain.handle("settings:pickPet", async () => {
   const r = await dialog.showOpenDialog(settingsWin, { title: "Choose a pet", properties: ["openFile"], filters: [{ name: "Pet (zip or pet.json)", extensions: ["zip", "json"] }] });
   if (r.canceled || !r.filePaths[0]) return settingsView();
-  const pet = petPack.importPack(r.filePaths[0], petsDir()); // a bad pack throws; the window shows the message
+  const pet = await petPack.importPack(r.filePaths[0], petsDir()); // unpacks off the main thread (#203); a bad pack throws and the window shows the message
   config = { ...config, customPet: pet.id, pet: true };
   saveConfig(); sendTheme();
   return settingsView();
