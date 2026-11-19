@@ -998,7 +998,11 @@ function sendTheme() {
 }
 // the name the pet and the dashboard greet you by: the one from settings, else the Windows account name
 function displayName() {
-  const n = (config.userName || os.userInfo().username || "").trim().split(/[\s._-]/)[0];
+  // a non-string name (a config changed while running) or a failing account lookup must not break the theme (#200)
+  let account = "";
+  try { account = os.userInfo().username; } catch {}
+  const name = typeof config.userName === "string" && config.userName.trim() ? config.userName : account;
+  const n = String(name || "").trim().split(/[\s._-]/)[0];
   return n ? n[0].toUpperCase() + n.slice(1) : "";
 }
 
